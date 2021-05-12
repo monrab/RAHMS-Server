@@ -1,0 +1,192 @@
+<!--  
+ * @file index.html
+ * @author Monika Rabka
+ * @brief Modified code from https://randomnerdtutorials.com/esp32-esp-now-wi-fi-web-server/
+ * @version 0.1
+ * @date 2021-04 
+-->
+
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>RAHMS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+    integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+  <link rel="icon" href="data:,">
+  <style>
+    html {
+      font-family: Arial;
+      display: inline-block;
+      text-align: center;
+    }
+
+    p {
+      font-size: 1.2rem;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    .topnav {
+      overflow: hidden;
+      background-color: #C693A1;
+      color: white;
+      font-size: 1.7rem;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .photo {
+      padding: 20px;
+      max-width: 700px;
+      background-color: white;
+      box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);
+      margin: auto;
+    }
+
+    .card {
+      background-color: white;
+      box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);
+    }
+
+    .cards {
+      max-width: 700px;
+      margin: 0 auto;
+      display: grid;
+      grid-gap: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .reading {
+      font-size: 2.8rem;
+    }
+
+    .packet {
+      color: #bebebe;
+    }
+
+    .card.temperature {
+      color: #fd7e14;
+    }
+
+    .card.humidity {
+      color: #1b78e2;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topnav">
+    <h3>RAHMS SERVER</h3>
+  </div>
+  <div class="topnav">
+    <h3>GPS Long and Lat</h3>
+    <p><span>
+        <h4>Longitude</h4>
+      </span><span id="longitutde">%LONGITUDE%</span></p>
+    <p><span>
+        <h4>Latitude</h4>
+      </span><span id="latitude">%LATITUDE%</span></p>
+  </div>
+  <div class="content">
+    <div class="cards">
+      <div class="card airtemperature">
+        <h4><i class="fas fa-thermometer-half"></i> BOARD #1 - TEMPERATURE</h4>
+        <p><span class="reading"><span id="airtemperature"></span> &deg;C</span></p>
+      </div>
+      <div class="card airhumidity">
+        <h4><i class="fas fa-tint"></i> BOARD #1 - HUMIDITY</h4>
+        <p><span class="reading"><span id="airhumidity"></span> &percnt;</span></p>
+      </div>
+      <div class="card airpressure">
+        <h4><i></i> BOARD #1 - PRESSURE</h4>
+        <p><span class="reading"><span id="airpressure"></span> hPa</span></p>
+      </div>
+      <div class="card soiltemperature">
+        <h4><i class="fas fa-thermometer-half"></i> BOARD #1 - SOIL TEMP</h4>
+        <p><span class="reading"><span id="soiltemperature"></span> &deg;C</span></p>
+      </div>
+      <div class="card soilmoisture">
+        <h4><i class="fas fa-tint"></i> BOARD #1 - SOIL MOISTURE</h4>
+        <p><span class="reading"><span id="soilmoisture"></span> &percnt;</span></p>
+      </div>
+      <div class="card eCO2">
+        <h4><i></i> BOARD #1 - eCO2</h4>
+        <p><span class="reading"><span id="eCO2"></span> ppm</span></p>
+      </div>
+      <div class="card tVOC">
+        <h4><i></i> BOARD #1 - tVOC</h4>
+        <p><span class="reading"><span id="tVOC"></span> ppb</span></p>
+      </div>
+      <div class="card ldrValue">
+        <h4><i></i> BOARD #1 - LDR</h4>
+        <p><span class="reading"><span id="LDR"></span> &percnt;</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="photo">
+    <h4> BOARD #1 - LAST PHOTO</h4>
+    <img src="http://2dc03f624b79.ngrok.io/saved-photo" id="photo" width="80%">
+  </div>
+  <script>
+    if (!!window.EventSource) {
+      var source = new EventSource('/events');
+
+      source.addEventListener('open', function (e) {
+        console.log("Events Connected");
+      }, false);
+      source.addEventListener('error', function (e) {
+        if (e.target.readyState != EventSource.OPEN) {
+          console.log("Events Disconnected");
+        }
+      }, false);
+
+      source.addEventListener('message', function (e) {
+        console.log("message", e.data);
+      }, false);
+      source.addEventListener('gps', function (e) {
+        console.log("gps", e.data);
+      }, false);
+
+      source.addEventListener('new_readings', function (e) {
+        console.log("new_readings", e.data);
+        var obj = JSON.parse(e.data);
+        document.getElementById("airtemperature").innerHTML = obj.airtemperature.toFixed(2);
+        document.getElementById("airhumidity").innerHTML = obj.airhumidity.toFixed(1);
+        document.getElementById("airpressure").innerHTML = obj.airpressure.toFixed(2);
+        document.getElementById("soiltemperature").innerHTML = obj.soiltemperature.toFixed(2);
+        document.getElementById("soilmoisture").innerHTML = obj.soilmoisture.toFixed(2);
+        document.getElementById("eCO2").innerHTML = obj.eCO2.toFixed(2);
+        document.getElementById("tVOC").innerHTML = obj.tVOC.toFixed(2);
+        document.getElementById("LDR").innerHTML = obj.LDR;
+      }, false);
+    }
+    setInterval(function () {
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          document.getElementById("longitude").innerHTML = this.responseText;
+        }
+      };
+      xhttp.open("GET", "/longitude", true);
+      xhttp.send();
+    }, 1000);
+    setInterval(function () {
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          document.getElementById("latitude").innerHTML = this.responseText;
+        }
+      };
+      xhttp.open("GET", "/latitude", true);
+      xhttp.send();
+    }, 1000);
+  </script>
+</body>
+
+</html>
