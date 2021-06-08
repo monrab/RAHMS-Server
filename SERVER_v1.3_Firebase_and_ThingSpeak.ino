@@ -94,6 +94,7 @@ double FC28;
 double LDR;
 
 int thingspeaktimer;
+int thingspeakdelay = 1800000;
 
 /**
 // To be used if Static IP address, gateway, and subnet are needed 
@@ -379,7 +380,7 @@ void loop()
   }
   // ****************************************************************************************
   // Sends the values to ThingSpeak every 30mins
-  if ((millis() - thingspeaktimer) > 1800000)
+  if ((millis() - thingspeaktimer) > thingspeakdelay)
   {
     sendToThingSpeak();
     thingspeaktimer = millis();
