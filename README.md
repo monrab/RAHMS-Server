@@ -29,9 +29,11 @@ unsigned long myChannelNumber = 123456789;
 const char *myWriteAPIKey = "**************";
 }
 ```
-as well as the ThingSpeak upload delay which sets how often the sensor values will be posted to the channel.
+as well as the ThingSpeak and Firebase upload delays which sets how often the sensor values will be posted to the channel/database.
 ```c++
-int thingspeakdelay = 1800000;
+int thingspeak_timer;
+int thingspeak_delay = 1800000;
+int firebase_timer;
+int firebase_delay = 900000;
 ```
-
 
