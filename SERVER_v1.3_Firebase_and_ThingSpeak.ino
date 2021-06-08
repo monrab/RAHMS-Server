@@ -1,7 +1,7 @@
 /**
  * @file SERVER_v1.3_Firebase_and_ThingSpeak.ino
  * @author Monika Rabka
- * @brief 
+ * @brief  RAHMS Server
  * @version 0.1
  * @date 2021-04
  * 
@@ -93,8 +93,10 @@ double DS18B20;
 double FC28;
 double LDR;
 
-int thingspeaktimer;
-int thingspeakdelay = 1800000;
+int thingspeak_timer;
+int thingspeak_delay = 1800000;
+int firebase_timer;
+int firebase_delay = 900000;
 
 /**
 // To be used if Static IP address, gateway, and subnet are needed 
@@ -281,7 +283,8 @@ void setup()
   // GMT 0 = 0
   timeClient.setTimeOffset(3600);
 
-  thingspeaktimer = millis();
+  thingspeak_timer = millis();
+  firebase_timer = millis();
 
   // *******************************************************************************************************************************************************************
   // Route for root / web page
@@ -357,35 +360,39 @@ void loop()
   //If there are values received from the Client then add to Firebase (don't upload when variables store 0)
   if (received)
   {
-    jsonFirebase.add("BME280_Temp", BME280temp);
-    jsonFirebase.add("BME280_Hum", BME280hum);
-    jsonFirebase.add("BME280_Pres", BME280pres);
-    jsonFirebase.add("CCS811_CO2", CCS811co2);
-    jsonFirebase.add("CCS811_tVOC", CCS811tvoc);
-    jsonFirebase.add("Soil_Temp", DS18B20);
-    jsonFirebase.add("Soil_Moisture", FC28);
-    jsonFirebase.add("LDR", LDR);
+    // Sends the values to Firebase every 15mins
+     if ((millis() - firebase_timer) > firebase_delay)
+    {
+      jsonFirebase.add("BME280_Temp", BME280temp);
+      jsonFirebase.add("BME280_Hum", BME280hum);
+      jsonFirebase.add("BME280_Pres", BME280pres);
+      jsonFirebase.add("CCS811_CO2", CCS811co2);
+      jsonFirebase.add("CCS811_tVOC", CCS811tvoc);
+      jsonFirebase.add("Soil_Temp", DS18B20);
+      jsonFirebase.add("Soil_Moisture", FC28);
+      jsonFirebase.add("LDR", LDR);
 
-    //Sets the JSON object in the firebase on a specific time/day node instead of auto generated paths
-    if (Firebase.setJSON(firebaseData, board_name + formattedDay + formattedTime, jsonFirebase))
-    {
-      Serial.println(firebaseData.dataPath());
-      Serial.println(firebaseData.pushName());
-      Serial.println(firebaseData.dataPath() + "/" + firebaseData.pushName());
-    }
-    else
-    {
-      Serial.println(firebaseData.errorReason());
+      //Sets the JSON object in the firebase on a specific time/day node instead of auto generated paths
+      if (Firebase.setJSON(firebaseData, board_name + formattedDay + formattedTime, jsonFirebase))
+      {
+        Serial.println(firebaseData.dataPath());
+        Serial.println(firebaseData.pushName());
+        Serial.println(firebaseData.dataPath() + "/" + firebaseData.pushName());
+      }
+      else
+      {
+        Serial.println(firebaseData.errorReason());
+      }
     }
   }
   // ****************************************************************************************
   // Sends the values to ThingSpeak every 30mins
-  if ((millis() - thingspeaktimer) > thingspeakdelay)
+  if ((millis() - thingspeak_timer) > thingspeak_delay)
   {
     sendToThingSpeak();
-    thingspeaktimer = millis();
+    thingspeak_timer = millis();
   }
-  delay(900000);
+  delay(500);
 }
 //************************************************************************
 //************************************************************************
