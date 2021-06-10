@@ -10,6 +10,10 @@ The data folder which includes the website's HTML file needs to be added into th
 
 ![server website](https://github.com/monrab/assets/blob/main/Screenshot_2021-05-08%20RAHMS%20Server%20-%20Copy.png?raw=true)
 
+## Firebase node tree
+
+![firebase-node-tree](https://github.com/monrab/assets/blob/main/Changes%20to%20Firebase%20-%20final%20tree%20structure%20-%20Copy.jpg?raw=true)
+
 ### Arduino
 The credentials needed to be set are at the beggining of the sketch
 ```c++
